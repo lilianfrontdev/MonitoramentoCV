@@ -1,0 +1,92 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  --color-primary: #004b78;
+  --color-primary-hover: #003957;
+  --color-secondary: #0077af;
+
+  --color-success: #5fafac;
+  --color-warning: #eab618;
+  --color-danger: #9e1045;
+
+  --color-background: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-text: #3f3e3e;
+  --color-text-muted: #64748b;
+  --color-border: #dce3e9;
+
+  color: var(--color-text);
+  background-color: var(--color-background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--color-secondary);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 3px;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 48px 24px;
+}
+
+.welcome {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 12px;
+}
+
+.welcome__label {
+  margin: 0 0 8px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.welcome h1 {
+  margin: 0 0 12px;
+  color: var(--color-primary);
+  font-size: 32px;
+}
+
+.welcome__description {
+  margin: 0;
+  color: var(--color-text-muted);
+}
