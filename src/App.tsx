@@ -1,28 +1,28 @@
-import { Box, Chip, Container, Paper, Stack, Typography } from '@mui/material'
+import { Paper, Stack, Typography } from '@mui/material'
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
+import { DashboardLayout } from './layouts/DashboardLayout'
 
 function App() {
   return (
-    <Container maxWidth="lg">
-      <Box component="main" sx={{ py: 6 }}>
-        <Paper variant="outlined" sx={{ p: { xs: 3, md: 4 } }}>
-          <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
-            <Chip
-              label="Monitoramento visual do CD"
-              color="primary"
-              variant="outlined"
-              size="small"
-            />
+    <DashboardLayout>
+      <Paper variant="outlined" sx={{ p: 4 }}>
+        <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
+          <Inventory2OutlinedIcon
+            color="primary"
+            sx={{ fontSize: 36 }}
+          />
 
-            <Typography variant="h1">CD Visão Computacional</Typography>
+          <Typography component="h2" variant="h6">
+            Nenhum dado encontrado
+          </Typography>
 
-            <Typography color="text.secondary">
-              Identificação de caixas térmicas e acompanhamento
-              da ocupação do centro de distribuição.
-            </Typography>
-          </Stack>
-        </Paper>
-      </Box>
-    </Container>
+          <Typography color="text.secondary">
+            Os indicadores serão exibidos quando houver resultados
+            de uma inspeção.
+          </Typography>
+        </Stack>
+      </Paper>
+    </DashboardLayout>
   )
 }
 
