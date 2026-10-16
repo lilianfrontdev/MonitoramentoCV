@@ -1,17 +1,28 @@
+import { Box, Chip, Container, Paper, Stack, Typography } from '@mui/material'
+
 function App() {
   return (
-    <main className="app">
-      <section className="welcome" aria-labelledby="welcome-title">
-        <p className="welcome__label">Monitoramento visual do CD</p>
+    <Container maxWidth="lg">
+      <Box component="main" sx={{ py: 6 }}>
+        <Paper variant="outlined" sx={{ p: { xs: 3, md: 4 } }}>
+          <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
+            <Chip
+              label="Monitoramento visual do CD"
+              color="primary"
+              variant="outlined"
+              size="small"
+            />
 
-        <h1 id="welcome-title">CD Visão</h1>
+            <Typography variant="h1">CD Visão Computacional</Typography>
 
-        <p className="welcome__description">
-          Identificação de caixas térmicas e acompanhamento da ocupação
-          do centro de distribuição.
-        </p>
-      </section>
-    </main>
+            <Typography color="text.secondary">
+              Identificação de caixas térmicas e acompanhamento
+              da ocupação do centro de distribuição.
+            </Typography>
+          </Stack>
+        </Paper>
+      </Box>
+    </Container>
   )
 }
 
