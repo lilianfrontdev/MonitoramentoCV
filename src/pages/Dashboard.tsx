@@ -1,66 +1,161 @@
-import { Alert, Box, Stack, Typography } from "@mui/material";
-import { StatCard } from "../components/StatCard";
-import { InspectionPreview } from "../components/InspectionPreview";
-import { InspectionResults } from "../components/InspectionResults";
-
-const mockIndicators = [
-  {
-    title: "Agrupamentos de caixas térmicas",
-    value: "14",
-    description: "Agrupamentos identificados na inspeção",
-  },
-  {
-    title: "Volumes não identificados",
-    value: "4",
-    description: "Aguardando conferência visual",
-  },
-  {
-    title: "Posições vazias",
-    value: "4",
-    description: "Posições visíveis sem volumes",
-  },
-  {
-    title: "Ocupação observada",
-    value: "82%",
-    description: "18 ocupadas entre 22 observáveis",
-  },
-];
+import { useState } from 'react'
+import {
+  Alert,
+  Box,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { mockResults, warehouseStreets } from '../data/mockInspections'
+import { StatCard } from '../components/StatCard'
+import { InspectionPreview } from '../components/InspectionPreview'
+import { InspectionResults } from '../components/InspectionResults'
 
 export function Dashboard() {
+  const [selectedStreet, setSelectedStreet] = useState('all')
+
+  const filteredResults = mockResults.filter(
+    (result) =>
+      selectedStreet === 'all' ||
+      result.street === selectedStreet,
+  )
+
+  const thermalCount = filteredResults.filter(
+    (result) => result.status === 'thermal',
+  ).length
+
+  const unknownCount = filteredResults.filter(
+    (result) => result.status === 'unknown',
+  ).length
+
+  const emptyCount = filteredResults.filter(
+    (result) => result.status === 'empty',
+  ).length
+
+  const observableCount = filteredResults.filter(
+    (result) => result.status !== 'not_observable',
+  ).length
+
+  const occupiedCount = thermalCount + unknownCount
+
+  const occupancy =
+    observableCount > 0
+      ? `${Math.round((occupiedCount / observableCount) * 100)}%`
+      : '—'
+
+  const totalCapacity = warehouseStreets.reduce(
+    (total, street) => total + street.capacity,
+    0,
+  )
+
+  const monitoredStreets = new Set(
+    mockResults.map((result) => result.street),
+  ).size
+
+  const selectedCapacity =
+    selectedStreet === 'all'
+      ? totalCapacity
+      : warehouseStreets.find(
+          (street) => street.id === selectedStreet,
+        )?.capacity ?? 0
+
+  const hasResults = filteredResults.length > 0
+
+  const indicators = [
+    {
+      title: 'Agrupamentos de caixas térmicas',
+      value: hasResults ? String(thermalCount) : '—',
+      description: 'Identificados na área selecionada',
+    },
+    {
+      title: 'Volumes não identificados',
+      value: hasResults ? String(unknownCount) : '—',
+      description: 'Aguardando conferência visual',
+    },
+    {
+      title: 'Posições vazias',
+      value: hasResults ? String(emptyCount) : '—',
+      description: 'Posições visíveis sem volumes',
+    },
+    {
+      title: 'Ocupação observada',
+      value: occupancy,
+      description: hasResults
+        ? `${occupiedCount} ocupadas entre ${observableCount} observáveis`
+        : 'Sem inspeção para esta rua',
+    },
+  ]
+
   return (
     <Stack spacing={3}>
-      <Alert severity="info">
-        Dados demonstrativos. Nenhuma inspeção real foi processada.
-      </Alert>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: 2,
+        }}
+      >
+        <TextField
+          select
+          label="Rua"
+          size="small"
+          value={selectedStreet}
+          onChange={(event) => setSelectedStreet(event.target.value)}
+          sx={{ width: { xs: '100%', sm: 220 } }}
+        >
+          <MenuItem value="all">Todas as ruas</MenuItem>
+
+          {warehouseStreets.map((street) => (
+            <MenuItem key={street.id} value={street.id}>
+              Rua {street.id}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <Typography variant="body2" color="text.secondary">
+          CD completo: {totalCapacity} posições cadastradas
+          {' · '}
+          {monitoredStreets} de {warehouseStreets.length} ruas monitoradas
+        </Typography>
+      </Box>
 
       <Box
         sx={{
-          display: "grid",
+          display: 'grid',
           gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, minmax(0, 1fr))",
-            xl: "repeat(4, minmax(0, 1fr))",
+            xs: '1fr',
+            sm: 'repeat(2, minmax(0, 1fr))',
+            xl: 'repeat(4, minmax(0, 1fr))',
           },
           gap: 3,
         }}
       >
-        {mockIndicators.map((indicator) => (
-          <StatCard
-            key={indicator.title}
-            title={indicator.title}
-            value={indicator.value}
-            description={indicator.description}
-          />
+        {indicators.map((indicator) => (
+          <StatCard key={indicator.title} {...indicator} />
         ))}
       </Box>
 
-      <InspectionPreview />
-      <InspectionResults />
-      
-      <Typography color="text.secondary" sx={{ mt: 1 }}>
-        Esta área exibirá a imagem analisada e as marcações dos objetos
-        detectados.
+      <Typography variant="body2" color="text.secondary">
+        Área selecionada: {selectedCapacity} posições cadastradas
+        {' · '}
+        {filteredResults.length} inspecionadas
+        {' · '}
+        {observableCount} observáveis
       </Typography>
+
+      {!hasResults && (
+        <Alert severity="warning">
+          Esta rua ainda não possui resultados de inspeção.
+          Sua ocupação é desconhecida.
+        </Alert>
+      )}
+
+      <InspectionPreview />
+
+      <InspectionResults results={filteredResults} />
     </Stack>
-  );
+  )
 }

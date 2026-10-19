@@ -9,42 +9,15 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
+import type { InspectionResult } from '../types/inspections'
 
-type InspectionResult = {
-  position: string
-  classification: string
-  confidence: number | null
-  needsReview: boolean
+type InspectionResultsProps = {
+  results: InspectionResult[]
 }
 
-const mockResults: InspectionResult[] = [
-  {
-    position: '01',
-    classification: 'Agrupamento de caixas térmicas',
-    confidence: 96,
-    needsReview: false,
-  },
-  {
-    position: '02',
-    classification: 'Volume não identificado',
-    confidence: null,
-    needsReview: true,
-  },
-  {
-    position: '03',
-    classification: 'Posição vazia',
-    confidence: 94,
-    needsReview: false,
-  },
-  {
-    position: '04',
-    classification: 'Não observável',
-    confidence: null,
-    needsReview: true,
-  },
-]
-
-export function InspectionResults() {
+export function InspectionResults({
+  results,
+}: InspectionResultsProps) {
   return (
     <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
       <Typography
@@ -57,10 +30,13 @@ export function InspectionResults() {
       </Typography>
 
       <TableContainer>
-        <Table aria-labelledby="inspection-results-title" sx={{ minWidth: 640 }}>
+        <Table
+          aria-labelledby="inspection-results-title"
+          sx={{ minWidth: 640 }}
+        >
           <TableHead>
             <TableRow sx={{ bgcolor: 'background.default' }}>
-              <TableCell>Rua</TableCell>
+              <TableCell>Posição</TableCell>
               <TableCell>Classificação</TableCell>
               <TableCell>Confiança</TableCell>
               <TableCell>Revisão</TableCell>
@@ -68,13 +44,15 @@ export function InspectionResults() {
           </TableHead>
 
           <TableBody>
-            {mockResults.map((result) => (
+            {results.map((result) => (
               <TableRow key={result.position} hover>
                 <TableCell component="th" scope="row">
                   {result.position}
                 </TableCell>
 
-                <TableCell>{result.classification}</TableCell>
+                <TableCell>
+                  {result.classification}
+                </TableCell>
 
                 <TableCell>
                   {result.confidence === null
@@ -89,13 +67,27 @@ export function InspectionResults() {
                         ? 'Revisão necessária'
                         : 'Sem pendências'
                     }
-                    color={result.needsReview ? 'warning' : 'default'}
+                    color={
+                      result.needsReview ? 'warning' : 'success'
+                    }
                     variant="outlined"
                     size="small"
                   />
                 </TableCell>
               </TableRow>
             ))}
+
+            {results.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  align="center"
+                  sx={{ py: 4 }}
+                >
+                  Nenhuma inspeção disponível para esta rua.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -105,8 +97,8 @@ export function InspectionResults() {
         color="text.secondary"
         sx={{ display: 'block', p: 3 }}
       >
-        Amostra demonstrativa de quatro posições. As classificações
-        e os percentuais não foram gerados por um modelo.
+        Resultados demonstrativos da área selecionada.
+        Nenhuma classificação foi gerada pelo modelo.
       </Typography>
     </Paper>
   )
