@@ -1,6 +1,7 @@
 import { Alert, Box, Stack, Typography } from "@mui/material";
 import { StatCard } from "../components/StatCard";
 import { InspectionPreview } from "../components/InspectionPreview";
+import { InspectionResults } from "../components/InspectionResults";
 
 const mockIndicators = [
   {
@@ -54,6 +55,7 @@ export function Dashboard() {
       </Box>
 
       <InspectionPreview />
+      <InspectionResults />
       
       <Typography color="text.secondary" sx={{ mt: 1 }}>
         Esta área exibirá a imagem analisada e as marcações dos objetos
