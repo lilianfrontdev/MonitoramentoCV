@@ -21,11 +21,11 @@ const streetPositions: {
   statuses: PositionStatus[];
 }[] = [
   {
-    street: "A",
+    street: "01",
     statuses: ["thermal", "thermal", "unknown", "thermal", "empty", "thermal"],
   },
   {
-    street: "B",
+    street: "02",
     statuses: [
       "thermal",
       "thermal",
@@ -36,11 +36,11 @@ const streetPositions: {
     ],
   },
   {
-    street: "C",
+    street: "03",
     statuses: ["thermal", "empty", "thermal", "thermal", "unknown", "thermal"],
   },
   {
-    street: "D",
+    street: "04",
     statuses: [
       "not_observable",
       "thermal",
