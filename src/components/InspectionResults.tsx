@@ -1,5 +1,4 @@
 import {
-  Chip,
   Paper,
   Table,
   TableBody,
@@ -8,23 +7,22 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from '@mui/material'
-import type { InspectionResult } from '../types/inspections'
+} from "@mui/material";
+
+import type { InspectionResult } from "../types/inspections";
 
 type InspectionResultsProps = {
-  results: InspectionResult[]
-}
+  results: InspectionResult[];
+};
 
-export function InspectionResults({
-  results,
-}: InspectionResultsProps) {
+export function InspectionResults({ results }: InspectionResultsProps) {
   return (
-    <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
+    <Paper variant="outlined" sx={{ overflow: "hidden", borderRadius: 1 }}>
       <Typography
         id="inspection-results-title"
         component="h2"
         variant="h6"
-        sx={{ p: 3 }}
+        sx={{ p: { xs: 2, sm: 3 }, fontWeight: 600 }}
       >
         Resultados da inspeção
       </Typography>
@@ -32,59 +30,47 @@ export function InspectionResults({
       <TableContainer>
         <Table
           aria-labelledby="inspection-results-title"
-          sx={{ minWidth: 640 }}
+          sx={{ minWidth: 600 }}
         >
           <TableHead>
-            <TableRow sx={{ bgcolor: 'background.default' }}>
+            <TableRow sx={{ bgcolor: "background.default" }}>
               <TableCell>Posição</TableCell>
+              <TableCell>Localização</TableCell>
               <TableCell>Classificação</TableCell>
-              <TableCell>Confiança</TableCell>
-              <TableCell>Revisão</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {results.map((result) => (
-              <TableRow key={result.position} hover>
+              <TableRow key={`${result.street}-${result.id}`} hover>
                 <TableCell component="th" scope="row">
-                  {result.position}
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {result.position || "Não definida"}
+                  </Typography>
                 </TableCell>
 
                 <TableCell>
-                  {result.classification}
+                  Rua {result.street}
+                  {result.provisionalPosition && (
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block" }}
+                    >
+                      Posição provisória
+                    </Typography>
+                  )}
                 </TableCell>
 
-                <TableCell>
-                  {result.confidence === null
-                    ? 'Não disponível'
-                    : `${result.confidence}%`}
-                </TableCell>
-
-                <TableCell>
-                  <Chip
-                    label={
-                      result.needsReview
-                        ? 'Revisão necessária'
-                        : 'Sem pendências'
-                    }
-                    color={
-                      result.needsReview ? 'warning' : 'success'
-                    }
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
+                <TableCell>{result.classification}</TableCell>
               </TableRow>
             ))}
 
             {results.length === 0 && (
               <TableRow>
-                <TableCell
-                  colSpan={4}
-                  align="center"
-                  sx={{ py: 4 }}
-                >
-                  Nenhuma inspeção disponível para esta rua.
+                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                  Nenhuma caixa rastreada nesta inspeção.
                 </TableCell>
               </TableRow>
             )}
@@ -95,11 +81,12 @@ export function InspectionResults({
       <Typography
         variant="caption"
         color="text.secondary"
-        sx={{ display: 'block', p: 3 }}
+        sx={{ display: "block", p: { xs: 2, sm: 3 } }}
       >
-        Resultados demonstrativos da área selecionada.
-        Nenhuma classificação foi gerada pelo modelo.
+        As posições são sequenciais e provisórias, baseadas na ordem de
+        identificação das caixas. Elas não representam endereços físicos
+        confirmados do estoque.
       </Typography>
     </Paper>
-  )
+  );
 }

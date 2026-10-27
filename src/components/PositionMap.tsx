@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box, ButtonBase, Paper, Stack, Typography } from "@mui/material";
+
 import type { InspectionResult, PositionStatus } from "../types/inspections";
 
 type PositionMapProps = {
@@ -12,12 +13,6 @@ type PositionMapProps = {
 
 type MapStatus = PositionStatus | "not_inspected";
 
-type MapPosition = {
-  position: string;
-  street: string;
-  status: MapStatus;
-};
-
 const statusConfig: Record<
   MapStatus,
   {
@@ -28,7 +23,7 @@ const statusConfig: Record<
   }
 > = {
   thermal: {
-    label: "Caixas térmicas",
+    label: "Caixa térmica detectada",
     background: "#D5EEE7",
     color: "#245D50",
     border: "1px solid transparent",
@@ -53,7 +48,7 @@ const statusConfig: Record<
     border: "1px solid transparent",
   },
   not_inspected: {
-    label: "Não inspecionada",
+    label: "Sem caixa atribuída",
     background: "#FFFFFF",
     color: "#64748B",
     border: "1px dotted #94A3B8",
@@ -63,18 +58,35 @@ const statusConfig: Record<
 export function PositionMap({ results, streets }: PositionMapProps) {
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
 
-  const columnCount = Math.max(1, ...streets.map((street) => street.capacity));
+  const streetData = streets.map((street) => {
+    const streetResults = results.filter(
+      (result) => result.street === street.id,
+    );
 
-  const positions = streets.flatMap((street) =>
-    Array.from({ length: street.capacity }, (_, index): MapPosition => {
+    const capacity = Math.max(street.capacity, streetResults.length);
+
+    return {
+      ...street,
+      capacity,
+      results: streetResults,
+    };
+  });
+
+  const columnCount = Math.max(
+    1,
+    ...streetData.map((street) => street.capacity),
+  );
+
+  const positions = streetData.flatMap((street) =>
+    Array.from({ length: street.capacity }, (_, index) => {
+      const result = street.results[index];
       const position = `${street.id}-${String(index + 1).padStart(2, "0")}`;
-
-      const result = results.find((item) => item.position === position);
 
       return {
         position,
         street: street.id,
-        status: result?.status ?? "not_inspected",
+        result,
+        status: result?.status ?? ("not_inspected" as const),
       };
     }),
   );
@@ -102,137 +114,136 @@ export function PositionMap({ results, streets }: PositionMapProps) {
           </Typography>
 
           <Typography variant="caption" color="text.secondary">
-            Clique para inspecionar
+            {results.length} caixas detectadas · posições provisórias
           </Typography>
         </Box>
 
-        <Box sx={{ overflowX: "auto", pb: 1 }}>
-          <Box
-            sx={{
-              minWidth: 28 + columnCount * 66,
-              display: "grid",
-              gap: 1,
-            }}
-          >
+        {streetData.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            Nenhuma rua selecionada para exibição.
+          </Typography>
+        ) : (
+          <Box sx={{ overflowX: "auto", pb: 1 }}>
             <Box
               sx={{
+                minWidth: 28 + columnCount * 66,
                 display: "grid",
-                gridTemplateColumns: gridColumns,
                 gap: 1,
               }}
             >
-              <Box />
-
-              {Array.from({ length: columnCount }, (_, index) => (
-                <Typography
-                  key={index}
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ textAlign: "center" }}
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </Typography>
-              ))}
-            </Box>
-
-            {streets.map((street) => (
               <Box
-                key={street.id}
                 sx={{
                   display: "grid",
                   gridTemplateColumns: gridColumns,
-                  alignItems: "center",
                   gap: 1,
                 }}
               >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ textAlign: "center" }}
+                <Box />
+
+                {Array.from({ length: columnCount }, (_, index) => (
+                  <Typography
+                    key={index}
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ textAlign: "center" }}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </Typography>
+                ))}
+              </Box>
+
+              {streetData.map((street) => (
+                <Box
+                  key={street.id}
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: gridColumns,
+                    alignItems: "center",
+                    gap: 1,
+                  }}
                 >
-                  {street.id}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ textAlign: "center" }}
+                  >
+                    {street.id}
+                  </Typography>
+
+                  {positions
+                    .filter((position) => position.street === street.id)
+                    .map((position) => {
+                      const config = statusConfig[position.status];
+                      const isSelected = selectedPosition === position.position;
+
+                      return (
+                        <ButtonBase
+                          key={position.position}
+                          aria-label={`${position.position}: ${config.label}`}
+                          aria-pressed={isSelected}
+                          onClick={() => setSelectedPosition(position.position)}
+                          sx={{
+                            minHeight: 42,
+                            px: 0.5,
+                            borderRadius: 1,
+                            border: config.border,
+                            background: config.background,
+                            color: config.color,
+                            fontSize: 11,
+                            boxShadow: isSelected
+                              ? "inset 0 0 0 2px #004B78"
+                              : "none",
+                            "&:hover": {
+                              filter: "brightness(0.96)",
+                            },
+                            "&.Mui-focusVisible": {
+                              outline: "3px solid",
+                              outlineColor: "primary.main",
+                              outlineOffset: 2,
+                            },
+                          }}
+                        >
+                          {position.result
+                            ? `${position.result.classification}`
+                            : "—"}
+                        </ButtonBase>
+                      );
+                    })}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          {Object.entries(statusConfig)
+            .filter(
+              ([status]) => status !== "empty" && status !== "not_observable",
+            )
+            .map(([status, config]) => (
+              <Box
+                key={status}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 0.5,
+                    background: config.background,
+                    border: "1px solid #CBD5E1",
+                  }}
+                />
+
+                <Typography variant="caption" color="text.secondary">
+                  {config.label}
                 </Typography>
-
-                {positions
-                  .filter((position) => position.street === street.id)
-                  .map((position) => {
-                    const config = statusConfig[position.status];
-                    const isSelected = selected?.position === position.position;
-
-                    return (
-                      <ButtonBase
-                        key={position.position}
-                        aria-label={`${position.position}: ${config.label}`}
-                        aria-pressed={isSelected}
-                        onClick={() => setSelectedPosition(position.position)}
-                        sx={{
-                          minHeight: 42,
-                          px: 0.5,
-                          borderRadius: 1,
-                          border: config.border,
-                          background: config.background,
-                          color: config.color,
-                          fontSize: 11,
-                          boxShadow: isSelected
-                            ? "inset 0 0 0 2px #004B78"
-                            : "none",
-                          "&:hover": {
-                            filter: "brightness(0.96)",
-                          },
-                          "&.Mui-focusVisible": {
-                            outline: "3px solid",
-                            outlineColor: "primary.main",
-                            outlineOffset: 2,
-                          },
-                        }}
-                      >
-                        {position.status === "empty"
-                          ? "Livre"
-                          : position.status === "not_observable"
-                            ? "—"
-                            : position.position}
-                      </ButtonBase>
-                    );
-                  })}
               </Box>
             ))}
-          </Box>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          {Object.entries(statusConfig).map(([status, config]) => (
-            <Box
-              key={status}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.75,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 0.5,
-                  background: config.background,
-                  border:
-                    status === "empty" || status === "not_inspected"
-                      ? config.border
-                      : "1px solid #CBD5E1",
-                }}
-              />
-
-              <Typography variant="caption" color="text.secondary">
-                {config.label}
-              </Typography>
-            </Box>
-          ))}
         </Box>
 
         <Box
@@ -247,14 +258,17 @@ export function PositionMap({ results, streets }: PositionMapProps) {
         >
           <Typography variant="body2" color="text.secondary">
             {selected
-              ? `${selected.position} · ${statusConfig[selected.status].label}`
-              : "Selecione uma posição para consultar sua classificação."}
+              ? `${selected.position} · ${selected.result.classification} · ${(
+                  (selected.result.confidence ?? 0) * 100
+                ).toFixed(1)}% de confiança`
+              : "Nenhuma caixa atribuída"}
           </Typography>
         </Box>
 
         <Typography variant="caption" color="text.secondary">
-          Posições vazias estão visíveis e sem volumes detectados. Posições não
-          observáveis ou não inspecionadas ficam fora do cálculo de ocupação.
+          As posições representam a sequência de identificação do rastreador,
+          não endereços físicos confirmados. Células sem caixas atribuídas não
+          representam espaços vazios confirmados pelo modelo.
         </Typography>
       </Stack>
     </Paper>
