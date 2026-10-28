@@ -8,12 +8,12 @@ export type JobStatus = "queued" | "processing" | "completed" | "failed";
 
 export type TrackedBox = {
   id: number;
-  ordem: number;
-  classe: BoxClass;
-  confianca: number;
-  primeiro_frame: number;
-  ultimo_frame: number;
-  contagem_deteccoes: number;
+  order: number;
+  class: BoxClass;
+  confidence: number;
+  first_frame: number;
+  last_frame: number;
+  detection_count: number;
 };
 
 export type TrackingSummary = {
@@ -96,18 +96,18 @@ export function mapInspectionResults(
   streetId = "A",
 ): InspectionResult[] {
   return [...(job.tracked_boxes ?? [])]
-    .sort((a, b) => a.ordem - b.ordem)
+    .sort((a, b) => a.order - b.order)
     .map((box) => ({
       id: box.id,
-      position: `${streetId}-${String(box.ordem).padStart(2, "0")}`,
+      position: `${streetId}-${String(box.order).padStart(2, "0")}`,
       street: streetId,
       status: "thermal",
-      classification: box.classe,
-      confidence: box.confianca,
-      needsReview: box.classe === "caixa-fechada",
-      firstFrame: box.primeiro_frame,
-      lastFrame: box.ultimo_frame,
-      detectionCount: box.contagem_deteccoes,
+      classification: box.class,
+      confidence: box.confidence,
+      needsReview: box.class === "caixa-fechada",
+      firstFrame: box.first_frame,
+      lastFrame: box.last_frame,
+      detectionCount: box.detection_count,
       provisionalPosition: true,
     }));
 }
