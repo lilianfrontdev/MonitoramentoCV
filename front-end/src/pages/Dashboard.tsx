@@ -47,36 +47,24 @@ export function Dashboard() {
     const current =
       queryClient.getQueryData<StreetInspection[]>(INSPECTIONS_QUERY_KEY) ?? [];
 
-    const existing = current.find(
-      (inspection) => inspection.job.job_id === job.job_id,
-    );
-
-    if (existing) {
-      queryClient.setQueryData<StreetInspection[]>(
-        INSPECTIONS_QUERY_KEY,
-        current.map((inspection) =>
-          inspection.job.job_id === job.job_id
-            ? { ...inspection, job }
-            : inspection,
-        ),
-      );
-
-      setSelectedStreet(existing.streetId);
-      return;
-    }
+    const streetId = job.street_id;
 
     const newInspection: StreetInspection = {
-      streetId: job.street_id,
+      streetId,
       job,
       createdAt: Date.now(),
     };
 
+    const inspectionsWithoutStreet = current.filter(
+      (inspection) => inspection.streetId !== streetId,
+    );
+
     queryClient.setQueryData<StreetInspection[]>(INSPECTIONS_QUERY_KEY, [
-      ...current,
+      ...inspectionsWithoutStreet,
       newInspection,
     ]);
 
-    setSelectedStreet(job.street_id);
+    setSelectedStreet(streetId);
   }
 
   const visibleInspections = useMemo(
@@ -115,6 +103,9 @@ export function Dashboard() {
   );
 
   const totalBoxes = results.length;
+  const streetIds = inspections
+    .map((inspection) => inspection.streetId)
+    .filter((streetId, index, streets) => streets.indexOf(streetId) === index);
 
   return (
     <Stack spacing={3}>
@@ -129,7 +120,7 @@ export function Dashboard() {
       >
         <TextField
           select
-          label="Rua / vídeo analisado"
+          label="Rua"
           size="small"
           value={selectedStreet}
           onChange={(event) => setSelectedStreet(event.target.value)}
@@ -137,9 +128,9 @@ export function Dashboard() {
         >
           <MenuItem value="all">Todas as ruas</MenuItem>
 
-          {inspections.map(({ streetId, job }) => (
-            <MenuItem key={job.job_id} value={streetId}>
-              Rua {streetId} — {job.filename}
+          {streetIds.map((streetId) => (
+            <MenuItem key={streetId} value={streetId}>
+              Rua {streetId}
             </MenuItem>
           ))}
         </TextField>

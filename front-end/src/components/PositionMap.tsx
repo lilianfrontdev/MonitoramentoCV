@@ -261,7 +261,7 @@ export function PositionMap({ results, streets }: PositionMapProps) {
               ? `${selected.position} · ${selected.result.classification} · ${(
                   (selected.result.confidence ?? 0) * 100
                 ).toFixed(1)}% de confiança`
-              : "Nenhuma caixa atribuída"}
+              : "Nenhuma caixa selecionada."}
           </Typography>
         </Box>
 
