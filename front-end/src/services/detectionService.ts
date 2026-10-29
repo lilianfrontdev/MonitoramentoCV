@@ -1,10 +1,20 @@
+import type { InspectionJob } from "./InspectionService";
+
 const API_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 ).replace(/\/+$/, "");
 
-export async function detectImage(file: File): Promise<Blob> {
+export async function detectImage(
+  file: File,
+  streetId: string,
+): Promise<{
+  job: InspectionJob;
+  imageUrl: string;
+}> {
   const formData = new FormData();
+
   formData.append("file", file);
+  formData.append("street_id", streetId);
 
   const response = await fetch(`${API_URL}/images`, {
     method: "POST",
@@ -18,17 +28,22 @@ export async function detectImage(file: File): Promise<Blob> {
       const data = await response.json();
       message = data.detail ?? message;
     } catch (error: unknown) {
-      console.error("Erro: ", error);
+      console.error("Erro:", error);
     }
 
     throw new Error(message);
   }
 
-  const result = await response.blob();
+  const job = (await response.json()) as InspectionJob;
 
-  if (!result.type.startsWith("image/")) {
-    throw new Error("A API não retornou uma imagem válida.");
+  if (!job.image_base64 || !job.image_media_type) {
+    throw new Error("A API não retornou a imagem processada.");
   }
 
-  return result;
+  const imageUrl = `data:${job.image_media_type};base64,${job.image_base64}`;
+
+  return {
+    job,
+    imageUrl,
+  };
 }

@@ -5,8 +5,10 @@ import {
   Box,
   Button,
   LinearProgress,
+  MenuItem,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 
@@ -36,6 +38,7 @@ export function InspectionPreview({
   onInspectionCompleted,
 }: InspectionPreviewProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [selectedStreetId, setSelectedStreetId] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<AnalysisStatus>("idle");
@@ -174,6 +177,11 @@ export function InspectionPreview({
   async function handleAnalyze() {
     if (!file || isProcessing) return;
 
+    if (!selectedStreetId) {
+      setError("Selecione uma rua antes de analisar o arquivo.");
+      return;
+    }
+
     setError("");
     setResultUrl(null);
     setProgress(0);
@@ -183,16 +191,20 @@ export function InspectionPreview({
       if (isVideo) {
         notifiedJobRef.current = null;
 
-        const job = await startInspectionMutation.mutateAsync(file);
+        const job = await startInspectionMutation.mutateAsync({
+          file,
+          streetId: selectedStreetId,
+        });
 
         setJobId(job.job_id);
         setProgress(0);
       } else {
-        const result = await detectImage(file);
+        const result = await detectImage(file, selectedStreetId);
 
-        setResultUrl(URL.createObjectURL(result));
+        setResultUrl(result.imageUrl);
         setProgress(100);
         setStatus("completed");
+        onInspectionCompleted?.(result.job);
       }
     } catch (err) {
       setStatus("failed");
@@ -209,6 +221,7 @@ export function InspectionPreview({
 
     setFile(null);
     setResultUrl(null);
+    setSelectedStreetId("");
     setJobId(null);
     setStatus("idle");
     setProgress(0);
@@ -323,6 +336,21 @@ export function InspectionPreview({
             <Typography variant="body2" color="text.secondary">
               {file.name}
             </Typography>
+
+            <TextField
+              select
+              fullWidth
+              label="Rua da inspeção"
+              value={selectedStreetId}
+              onChange={(event) => setSelectedStreetId(event.target.value)}
+              disabled={isProcessing}
+              required
+            >
+              <MenuItem value="A">Rua A</MenuItem>
+              <MenuItem value="B">Rua B</MenuItem>
+              <MenuItem value="C">Rua C</MenuItem>
+              <MenuItem value="D">Rua D</MenuItem>
+            </TextField>
 
             {status === "processing" && (
               <Stack spacing={1}>

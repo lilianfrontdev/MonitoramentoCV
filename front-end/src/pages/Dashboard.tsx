@@ -35,31 +35,6 @@ const CLASS_LABELS: Record<BoxClass, string> = {
   "caixa-fechada": "Caixa fechada",
 };
 
-function getNextStreetId(inspections: StreetInspection[]): string {
-  const usedIds = new Set(inspections.map((inspection) => inspection.streetId));
-
-  let number = 1;
-
-  while (true) {
-    let value = number;
-    let streetId = "";
-
-    while (value > 0) {
-      value -= 1;
-
-      streetId = String.fromCharCode(65 + (value % 26)) + streetId;
-
-      value = Math.floor(value / 26);
-    }
-
-    if (!usedIds.has(streetId)) {
-      return streetId;
-    }
-
-    number += 1;
-  }
-}
-
 export function Dashboard() {
   const queryClient = useQueryClient();
   const { data: inspections = [] } = useInspections();
@@ -90,10 +65,8 @@ export function Dashboard() {
       return;
     }
 
-    const streetId = getNextStreetId(current);
-
     const newInspection: StreetInspection = {
-      streetId,
+      streetId: job.street_id,
       job,
       createdAt: Date.now(),
     };
@@ -103,7 +76,7 @@ export function Dashboard() {
       newInspection,
     ]);
 
-    setSelectedStreet(streetId);
+    setSelectedStreet(job.street_id);
   }
 
   const visibleInspections = useMemo(

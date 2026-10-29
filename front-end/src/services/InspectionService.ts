@@ -29,6 +29,7 @@ export type TrackingSummary = {
 
 export type InspectionJob = {
   job_id: string;
+  street_id: string;
   filename: string;
   status: JobStatus;
   stage: string;
@@ -40,6 +41,8 @@ export type InspectionJob = {
   tracking_summary: TrackingSummary;
   video_url: string | null;
   download_url: string | null;
+  image_base64?: string;
+  image_media_type?: string;
 };
 
 async function getErrorMessage(response: Response): Promise<string> {
@@ -51,11 +54,17 @@ async function getErrorMessage(response: Response): Promise<string> {
   }
 }
 
-export async function startInspection(
-  file: File,
-): Promise<{ job_id: string; status: JobStatus }> {
+export async function startInspection({
+  file,
+  streetId,
+}: {
+  file: File;
+  streetId: string;
+}): Promise<{ job_id: string; status: JobStatus }> {
   const formData = new FormData();
+
   formData.append("file", file);
+  formData.append("street_id", streetId);
 
   const response = await fetch(`${API_URL}/videos`, {
     method: "POST",

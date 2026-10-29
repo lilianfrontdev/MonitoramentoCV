@@ -2,6 +2,7 @@
 # Gerencia uploads, tarefas, rastreamento e disponibilização dos resultados.
 
 import asyncio
+import base64
 import gc
 import logging
 import os
@@ -15,7 +16,7 @@ from threading import Lock
 import cv2
 import psutil
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket
+from fastapi import (FastAPI, File, Form, HTTPException, UploadFile, WebSocket)
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -312,7 +313,18 @@ def health():
 
 # Recebe um vídeo e inicia seu processamento em segundo plano.
 @app.post("/videos", status_code=202)
-async def upload_video(file: UploadFile = File(...)):
+async def upload_video(
+    file: UploadFile = File(...),
+    street_id: str = Form(...),
+):
+    allowed_streets = {"A", "B", "C", "D"}
+
+    if street_id not in allowed_streets:
+        raise HTTPException(
+            status_code=400,
+            detail="Rua inválida.",
+        )
+
     cleanup_old_jobs()
 
     filename = Path(file.filename or "").name
@@ -379,6 +391,7 @@ async def upload_video(file: UploadFile = File(...)):
     with jobs_lock:
         jobs[job_id] = {
             "job_id": job_id,
+            "street_id": street_id,
             "filename": filename,
             "status": "queued",
             "stage": "queued",
@@ -415,6 +428,7 @@ async def upload_video(file: UploadFile = File(...)):
     # Retorna o identificador e as rotas de acompanhamento.
     return {
         "job_id": job_id,
+        "street_id": street_id,
         "status": "queued",
         "stage": "queued",
         "progress_url": f"/jobs/{job_id}",
@@ -577,7 +591,18 @@ def get_processed_video(job_id: str):
 
 # Recebe uma imagem e executa a detecção de objetos utilizando YOLO.
 @app.post("/images")
-async def detect_image(file: UploadFile = File(...)):
+async def detect_image(
+    file: UploadFile = File(...),
+    street_id: str = Form(...),
+):
+    allowed_streets = {"A", "B", "C", "D"}
+
+    if street_id not in allowed_streets:
+        raise HTTPException(
+            status_code=400,
+            detail="Rua inválida.",
+        )
+
     filename = Path(file.filename or "").name
     extension = Path(filename).suffix.lower()
 
@@ -624,7 +649,7 @@ async def detect_image(file: UploadFile = File(...)):
         with model_lock:
             model = get_model()
 
-            output_path = await run_in_threadpool(
+            output_path, tracked_boxes = await run_in_threadpool(
                 process_image,
                 input_path,
                 model,
@@ -632,13 +657,56 @@ async def detect_image(file: UploadFile = File(...)):
 
         log_memory("imagem: processamento concluído")
 
-        # Retorna a imagem processada.
-        return FileResponse(
-            path=output_path,
-            media_type="image/jpeg",
-            filename=f"{Path(filename).stem}_detectado.jpg",
-            content_disposition_type="inline",
-        )
+        # Converte a imagem processada para Base64.
+        image_base64 = base64.b64encode(
+            output_path.read_bytes()
+        ).decode("ascii")
+
+        # Retorna a imagem e os dados das caixas detectadas.
+        return {
+            "job_id": uuid.uuid4().hex,
+            "street_id": street_id,
+            "filename": filename,
+            "status": "completed",
+            "stage": "completed",
+            "progress": 100,
+            "frames_processed": 0,
+            "total_frames": 0,
+            "error": None,
+            "tracked_boxes": tracked_boxes,
+            "tracking_summary": {
+                "total": len(tracked_boxes),
+                "caixa-preta": sum(
+                    box["class"] == "caixa-preta"
+                    for box in tracked_boxes
+                ),
+                "caixa-verde": sum(
+                    box["class"] == "caixa-verde"
+                    for box in tracked_boxes
+                ),
+                "caixa-azul": sum(
+                    box["class"] == "caixa-azul"
+                    for box in tracked_boxes
+                ),
+                "caixa-cinza": sum(
+                    box["class"] == "caixa-cinza"
+                    for box in tracked_boxes
+                ),
+                "caixa-vermelha": sum(
+                    box["class"] == "caixa-vermelha"
+                    for box in tracked_boxes
+                ),
+                "caixa-fechada": sum(
+                    box["class"] == "caixa-fechada"
+                    for box in tracked_boxes
+                ),
+                "classes_nao_reconhecidas": {},
+            },
+            "image_base64": image_base64,
+            "image_media_type": "image/jpeg",
+            "video_url": None,
+            "download_url": None,
+        }
 
     finally:
         # Remove o arquivo temporário após o processamento.

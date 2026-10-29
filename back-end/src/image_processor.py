@@ -19,7 +19,7 @@ CONFIDENCE = 0.25
 def process_image(
     input_path: str | Path,
     model: YOLO | None = None,
-) -> Path:
+) -> tuple[Path, list[dict]]:
     input_path = Path(input_path).resolve()
 
     # Valida a existência e o formato da imagem.
@@ -58,5 +58,46 @@ def process_image(
             f"Não foi possível salvar a imagem: {output_path}"
         )
 
-    # Retorna o caminho da imagem processada.
-    return output_path
+    # Organiza as caixas da esquerda para a direita.
+    detections = []
+
+    boxes = results[0].boxes
+
+    if boxes is not None:
+        class_ids = boxes.cls.int().cpu().tolist()
+        confidences = boxes.conf.cpu().tolist()
+        coordinates = boxes.xyxy.cpu().tolist()
+
+        for order, (class_id, confidence, coordinate) in enumerate(
+            zip(class_ids, confidences, coordinates),
+            start=1,
+        ):
+            class_name = results[0].names.get(
+                class_id,
+                str(class_id),
+            )
+
+            detections.append(
+                {
+                    "id": order,
+                    "order": order,
+                    "class": class_name,
+                    "confidence": round(float(confidence), 4),
+                    "first_frame": 0,
+                    "last_frame": 0,
+                    "detection_count": 1,
+                    "x1": round(float(coordinate[0]), 2),
+                    "y1": round(float(coordinate[1]), 2),
+                    "x2": round(float(coordinate[2]), 2),
+                    "y2": round(float(coordinate[3]), 2),
+                }
+            )
+
+    detections.sort(key=lambda item: item["x1"])
+
+    for order, detection in enumerate(detections, start=1):
+        detection["order"] = order
+        detection["id"] = order
+
+    # Retorna o caminho e as caixas detectadas.
+    return output_path, detections
