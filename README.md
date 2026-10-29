@@ -79,10 +79,11 @@ cd back-end
 python -m venv .venv
 
 # Windows
-.venv\Scripts\activate
+.\.venv\Scripts\activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# rodar a partir da pasta back-end, pois os imports usam o pacote "src"
+# rodar a partir da pasta back-end para iniciar a API, pois os imports usam o pacote "src"
 uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
@@ -94,6 +95,8 @@ A API sobe em `http://localhost:8000` (documentação interativa em `http://loca
 ```bash
 cd front-end
 npm install
+
+# rodar a partir da pasta front-end para iniciar o projeto
 npm run dev
 ```
 
