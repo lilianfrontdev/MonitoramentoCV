@@ -72,6 +72,7 @@ MonitoramentoCV/
 ## Executando o projeto
 
 ### 1. Back-end (API)
+Em um terminal, execute:
 
 ```bash
 cd back-end
@@ -91,6 +92,7 @@ A API sobe em `http://localhost:8000` (documentação interativa em `http://loca
 
 
 ### 2. Front-end (dashboard)
+Em outro terminal paralelo, execute:
 
 ```bash
 cd front-end
