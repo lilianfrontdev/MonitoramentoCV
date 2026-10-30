@@ -1,3 +1,4 @@
+// Cabeçalho com identificação da empresa e a descrição do projeto exibido acima do conteúdo principal.
 import { Box, Stack, Typography } from "@mui/material";
 import logo from "../assets/logo_soprano.png";
 

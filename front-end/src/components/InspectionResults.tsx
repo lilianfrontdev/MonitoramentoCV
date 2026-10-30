@@ -1,3 +1,5 @@
+// Exibe em tabela as caixas identificadas na inspeção e suas posições no mapa.
+
 import {
   Paper,
   Table,
@@ -12,10 +14,12 @@ import {
 import type { InspectionResult } from "../types/inspections";
 
 type InspectionResultsProps = {
+  // Resultados normalizados que serão apresentados na tabela.
   results: InspectionResult[];
 };
 
 export function InspectionResults({ results }: InspectionResultsProps) {
+  // Renderiza a tabela de resultados e a mensagem para listas vazias.
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden", borderRadius: 1 }}>
       <Typography
@@ -40,6 +44,7 @@ export function InspectionResults({ results }: InspectionResultsProps) {
             </TableRow>
           </TableHead>
 
+          {/* Exibe os resultados normalizados da inspeção em formato de tabela. */}
           <TableBody>
             {results.map((result) => (
               <TableRow key={`${result.street}-${result.id}`} hover>

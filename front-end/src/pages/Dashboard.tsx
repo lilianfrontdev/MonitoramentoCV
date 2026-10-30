@@ -1,3 +1,5 @@
+// Monta a tela principal de monitoramento, unindo filtros, inspeção, mapa e tabela.
+
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -41,6 +43,7 @@ export function Dashboard() {
 
   const [selectedStreet, setSelectedStreet] = useState("all");
 
+  // Substitui o resultado anterior da rua pelo job recém-concluído.
   function handleInspectionCompleted(job: InspectionJob) {
     if (job.status !== "completed") return;
 
@@ -67,6 +70,7 @@ export function Dashboard() {
     setSelectedStreet(streetId);
   }
 
+  // Filtra as inspeções exibidas no mapa e na tabela.
   const visibleInspections = useMemo(
     () =>
       selectedStreet === "all"
@@ -77,6 +81,7 @@ export function Dashboard() {
     [inspections, selectedStreet],
   );
 
+  // Converte as caixas da API no modelo usado pelo mapa e pela tabela.
   const results: InspectionResult[] = useMemo(
     () =>
       visibleInspections.flatMap(({ job, streetId }) =>
@@ -90,6 +95,7 @@ export function Dashboard() {
     [visibleInspections],
   );
 
+  // Define a quantidade de posições renderizadas para cada rua.
   const mapStreets = useMemo(
     () =>
       visibleInspections.map(({ streetId }) => ({
@@ -103,12 +109,14 @@ export function Dashboard() {
   );
 
   const totalBoxes = results.length;
+  // Remove ruas repetidas do seletor do dashboard.
   const streetIds = inspections
     .map((inspection) => inspection.streetId)
     .filter((streetId, index, streets) => streets.indexOf(streetId) === index);
 
   return (
     <Stack spacing={3}>
+      {/* Renderiza o filtro de rua e os totais da visualização atual. */}
       <Box
         sx={{
           display: "flex",
@@ -157,6 +165,7 @@ export function Dashboard() {
         <PositionMap results={results} streets={mapStreets} />
       </Box>
 
+      {/* Informa quando a seleção atual não possui caixas rastreadas. */}
       {inspections.length > 0 && results.length === 0 && (
         <Alert severity="warning">
           Não há caixas rastreadas na seleção atual. Isso não significa que o

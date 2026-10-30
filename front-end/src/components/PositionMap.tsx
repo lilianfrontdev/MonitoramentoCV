@@ -1,3 +1,5 @@
+// Renderiza o mapa visual das ruas e o estado de cada posição identificada.
+
 import { useState } from "react";
 import { Box, ButtonBase, Paper, Stack, Typography } from "@mui/material";
 
@@ -58,6 +60,7 @@ const statusConfig: Record<
 export function PositionMap({ results, streets }: PositionMapProps) {
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
 
+  // Agrupa os resultados e calcula a capacidade de cada rua.
   const streetData = streets.map((street) => {
     const streetResults = results.filter(
       (result) => result.street === street.id,
@@ -77,6 +80,7 @@ export function PositionMap({ results, streets }: PositionMapProps) {
     ...streetData.map((street) => street.capacity),
   );
 
+  // Cria as células numeradas, incluindo posições sem caixa detectada.
   const positions = streetData.flatMap((street) =>
     Array.from({ length: street.capacity }, (_, index) => {
       const result = street.results[index];
@@ -91,6 +95,7 @@ export function PositionMap({ results, streets }: PositionMapProps) {
     }),
   );
 
+  // Localiza a posição selecionada para exibir seus detalhes.
   const selected = positions.find(
     (position) => position.position === selectedPosition,
   );
@@ -123,6 +128,7 @@ export function PositionMap({ results, streets }: PositionMapProps) {
             Nenhuma rua selecionada para exibição.
           </Typography>
         ) : (
+          // Renderiza as ruas em linhas e as posições em células numeradas.
           <Box sx={{ overflowX: "auto", pb: 1 }}>
             <Box
               sx={{
@@ -177,6 +183,7 @@ export function PositionMap({ results, streets }: PositionMapProps) {
                       const isSelected = selectedPosition === position.position;
 
                       return (
+                        // Representa uma posição da rua e permite consultar seu resultado.
                         <ButtonBase
                           key={position.position}
                           aria-label={`${position.position}: ${config.label}`}
@@ -215,6 +222,7 @@ export function PositionMap({ results, streets }: PositionMapProps) {
           </Box>
         )}
 
+        {/* Renderiza a legenda dos estados exibidos no mapa. */}
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
           {Object.entries(statusConfig)
             .filter(

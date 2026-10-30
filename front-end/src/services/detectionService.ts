@@ -1,9 +1,12 @@
+// Envia imagens para a API e converte a resposta processada para uso posterior.
+
 import type { InspectionJob } from "./InspectionService";
 
 const API_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 ).replace(/\/+$/, "");
 
+// Envia a imagem para a API e prepara o resultado para a interface.
 export async function detectImage(
   file: File,
   streetId: string,
@@ -13,6 +16,7 @@ export async function detectImage(
 }> {
   const formData = new FormData();
 
+  // Envia a imagem e a rua selecionada no mesmo formulário.
   formData.append("file", file);
   formData.append("street_id", streetId);
 
@@ -36,6 +40,7 @@ export async function detectImage(
 
   const job = (await response.json()) as InspectionJob;
 
+  // Converte a imagem Base64 retornada pela API em uma URL para o elemento img.
   if (!job.image_base64 || !job.image_media_type) {
     throw new Error("A API não retornou a imagem processada.");
   }

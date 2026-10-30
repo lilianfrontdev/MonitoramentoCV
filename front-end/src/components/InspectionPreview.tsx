@@ -1,3 +1,5 @@
+// Permite selecionar, visualizar e enviar imagens ou vídeos para inspeção.
+
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import {
@@ -28,6 +30,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime"];
 
+// Estados exibidos durante o processamento do arquivo.
 type AnalysisStatus = "idle" | "processing" | "completed" | "failed";
 
 type InspectionPreviewProps = {
@@ -58,6 +61,7 @@ export function InspectionPreview({
 
   const isProcessing = status === "processing";
 
+  // Cria a URL temporária usada na prévia do arquivo.
   useEffect(() => {
     if (!file) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -71,12 +75,14 @@ export function InspectionPreview({
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  // Libera a URL Blob do resultado do vídeo.
   useEffect(() => {
     if (!resultUrl?.startsWith("blob:")) return;
 
     return () => URL.revokeObjectURL(resultUrl);
   }, [resultUrl]);
 
+  // Atualiza o progresso e o resultado do job de vídeo.
   useEffect(() => {
     if (!inspection || inspection.job_id !== jobId) return;
 
@@ -105,6 +111,7 @@ export function InspectionPreview({
     setStatus("processing");
   }, [inspection, jobId, onInspectionCompleted]);
 
+  // Exibe os frames JPEG enviados pelo WebSocket do job.
   useEffect(() => {
     if (!jobId || status !== "processing") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -150,6 +157,7 @@ export function InspectionPreview({
     };
   }, [liveFrameUrl]);
 
+  // Valida o arquivo e limpa o estado da inspeção anterior.
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0];
     event.target.value = "";
@@ -174,6 +182,7 @@ export function InspectionPreview({
     notifiedJobRef.current = null;
   }
 
+  // Processa imagens diretamente e acompanha vídeos por job.
   async function handleAnalyze() {
     if (!file || isProcessing) return;
 
@@ -216,6 +225,7 @@ export function InspectionPreview({
     }
   }
 
+  // Limpa o arquivo, o resultado e o estado da inspeção.
   function handleRemove() {
     if (isProcessing) return;
 
@@ -233,6 +243,7 @@ export function InspectionPreview({
   return (
     <Paper variant="outlined" sx={{ p: 3 }}>
       <Stack spacing={3}>
+        {/* Identifica a etapa de envio de evidências da inspeção. */}
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             Evidências da inspeção
@@ -244,6 +255,7 @@ export function InspectionPreview({
           </Typography>
         </Box>
 
+        {/* Renderiza os controles para selecionar ou remover o arquivo. */}
         <Stack
           spacing={1}
           useFlexGap
@@ -290,6 +302,7 @@ export function InspectionPreview({
           </Alert>
         )}
 
+        {/* Exibe a prévia, a rua selecionada e os controles de análise. */}
         {previewUrl && file ? (
           <Stack spacing={2}>
             <Box
@@ -352,6 +365,7 @@ export function InspectionPreview({
               <MenuItem value="D">Rua D</MenuItem>
             </TextField>
 
+            {/* Exibe o progresso enquanto a API processa o arquivo. */}
             {status === "processing" && (
               <Stack spacing={1}>
                 <Stack
@@ -413,6 +427,7 @@ export function InspectionPreview({
               </Button>
             )}
 
+            {/* Disponibiliza o vídeo ou a imagem processada para visualização e download. */}
             {status === "completed" && resultUrl && (
               <Stack spacing={2}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -420,15 +435,20 @@ export function InspectionPreview({
                 </Typography>
 
                 {isVideo ? (
-                  <Button
-                    variant="contained"
-                    startIcon={<DownloadOutlinedIcon />}
-                    component="a"
-                    href={resultUrl}
-                    download={`${file.name.replace(/\.[^.]+$/, "")}_detectado.mp4`}
-                  >
-                    Baixar vídeo processado
-                  </Button>
+                  <>
+                    <Typography>
+                      Análise do vídeo disponível para download abaixo.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      startIcon={<DownloadOutlinedIcon />}
+                      component="a"
+                      href={resultUrl}
+                      download={`${file.name.replace(/\.[^.]+$/, "")}_detectado.mp4`}
+                    >
+                      Baixar vídeo processado
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Box

@@ -1,11 +1,15 @@
+// Centraliza as chamadas da API usadas para iniciar e consultar inspeções de vídeo.
+
 import type { BoxClass, InspectionResult } from "../types/inspections";
 
 const API_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 ).replace(/\/+$/, "");
 
+// Estados possíveis da tarefa de processamento do vídeo.
 export type JobStatus = "queued" | "processing" | "completed" | "failed";
 
+// Representa uma caixa acompanhada ao longo dos frames do vídeo.
 export type TrackedBox = {
   id: number;
   order: number;
@@ -16,6 +20,7 @@ export type TrackedBox = {
   detection_count: number;
 };
 
+// Agrupa a quantidade total de caixas por classificação.
 export type TrackingSummary = {
   total: number;
   "caixa-preta": number;
@@ -27,6 +32,7 @@ export type TrackingSummary = {
   classes_nao_reconhecidas?: Record<string, number>;
 };
 
+// Representa o job retornado pela API durante e após o processamento.
 export type InspectionJob = {
   job_id: string;
   street_id: string;
@@ -45,6 +51,7 @@ export type InspectionJob = {
   image_media_type?: string;
 };
 
+// Extrai a mensagem de erro retornada pela API.
 async function getErrorMessage(response: Response): Promise<string> {
   try {
     const data = await response.json();
@@ -63,6 +70,7 @@ export async function startInspection({
 }): Promise<{ job_id: string; status: JobStatus }> {
   const formData = new FormData();
 
+  // Envia o vídeo e a rua selecionada para a API.
   formData.append("file", file);
   formData.append("street_id", streetId);
 
@@ -79,6 +87,7 @@ export async function startInspection({
 }
 
 export async function getInspection(jobId: string): Promise<InspectionJob> {
+  // Consulta o status e os resultados de um job existente.
   const response = await fetch(`${API_URL}/jobs/${jobId}`);
 
   if (!response.ok) {
@@ -88,13 +97,8 @@ export async function getInspection(jobId: string): Promise<InspectionJob> {
   return response.json();
 }
 
-export function getInspectionVideoUrl(job: InspectionJob): string | null {
-  return job.video_url
-    ? new URL(job.video_url, `${API_URL}/`).toString()
-    : null;
-}
-
 export function getInspectionDownloadUrl(job: InspectionJob): string | null {
+  // Converte o caminho do vídeo processado em uma URL de download.
   return job.download_url
     ? new URL(job.download_url, `${API_URL}/`).toString()
     : null;
@@ -104,6 +108,7 @@ export function mapInspectionResults(
   job: InspectionJob,
   streetId = "A",
 ): InspectionResult[] {
+  // Converte as caixas retornadas pela API em posições provisórias do mapa.
   return [...(job.tracked_boxes ?? [])]
     .sort((a, b) => a.order - b.order)
     .map((box) => ({
@@ -119,35 +124,4 @@ export function mapInspectionResults(
       detectionCount: box.detection_count,
       provisionalPosition: true,
     }));
-}
-
-export async function detectImage(file: File): Promise<Blob> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch(`${API_URL}/images`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    let message = "Não foi possível processar a imagem.";
-
-    try {
-      const data = await response.json();
-      message = data.detail ?? message;
-    } catch (error: unknown) {
-      console.error("Erro: ", error);
-    }
-
-    throw new Error(message);
-  }
-
-  const blob = await response.blob();
-
-  if (!blob.type.startsWith("image/")) {
-    throw new Error("A API não retornou uma imagem válida.");
-  }
-
-  return blob;
 }

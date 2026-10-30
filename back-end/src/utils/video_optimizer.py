@@ -1,5 +1,4 @@
-# Arquivo usado para otimizar os vídeos, para aparelhos com qualidade maior 
-# que os seus vídeos pesam muito e demoram para fazer upload, feito com ffmpeg
+# Arquivo usado para otimizar os vídeos, para aparelhos com qualidade maior, que os vídeos pesam muito e demoram para fazer upload, feito com ffmpeg
 import subprocess
 import tempfile
 from pathlib import Path

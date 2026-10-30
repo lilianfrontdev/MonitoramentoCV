@@ -1,3 +1,5 @@
+// Define o layout compartilhado pelo dashboard, com navegação, cabeçalho e conteúdo.
+
 import type { ReactNode } from "react";
 import { Box } from "@mui/material";
 import { Header } from "../components/Header";

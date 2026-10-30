@@ -1,6 +1,4 @@
-# As imagens do CD foram tiradas do iPhone, ou seja, ficou com sua extensão padrão, esse arquivo faz a transformção
-# de arquivos com extensão .HEIC para .jpg, para que as imagens pudessem ser passadas para o serviço de anotações 
-# de imagem
+# As imagens do CD foram tiradas do iPhone, ou seja, ficou com sua extensão padrão; Esse arquivo faz a transformação de arquivos com extensão .HEIC para .jpg, para que as imagens pudessem ser passadas para o serviço de anotações de imagem
 
 from pathlib import Path
 
@@ -22,8 +20,7 @@ def main():
     # Cria o diretório de saída caso ele ainda não exista.
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Percorre o diretório de entrada e todos os seus subdiretórios,
-    # selecionando apenas arquivos com as extensões suportadas.
+    # Percorre o diretório de entrada e todos os seus subdiretórios selecionando apenas arquivos com as extensões suportadas.
     files = [
         path
         for path in INPUT_DIR.rglob("*")
@@ -46,8 +43,8 @@ def main():
 
             
         try:
-            # Abre a imagem original e converte seus pixels para RGB,
-            # garantindo compatibilidade com a gravação em JPEG.
+            # Abre a imagem original e converte seus pixels para RGB
+            # garantindo compatibilidade com a gravação em JPEG
             with Image.open(file) as image:
                 image = image.convert("RGB")
                 image.save(output_path, "JPEG", quality=95)
