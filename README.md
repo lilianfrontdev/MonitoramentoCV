@@ -8,7 +8,6 @@ O repositório reúne as duas partes do sistema:
 |---|---|---|
 | [`back-end/`](back-end) | API de inferência, preparação do dataset e treinamento do modelo | Python · FastAPI · Ultralytics YOLO11 · OpenCV  |
 | [`front-end/`](front-end) | Dashboard de monitoramento | React 19 · TypeScript · Vite · Material UI  |
-
 ---
 
 ## Contexto e objetivo
@@ -174,3 +173,7 @@ O painel ("Centro de Distribuição Soprano · Visão Geral") é composto por:
 - **Mapa de posições** — grade por rua com a sequência de caixas identificadas (`A-01`, `A-02`…), colorida por status, com detalhe de classe e confiança ao clicar.
 - **Resultados da inspeção** — tabela com posição, classificação, confiança e sinalização de revisão.
 - **Filtro por rua** e histórico das inspeções concluídas, salvo no `localStorage` do navegador.
+
+## Mídia Exemplar
+
+O projeto conta com Mídias exemplares ([`front-end/src/data/images/`](front-end/src/data/images/)) para teste da solução, apresentando vídeos e imagens para leitura e interpretação do algoritmo.
