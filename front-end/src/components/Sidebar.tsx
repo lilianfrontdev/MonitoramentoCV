@@ -1,3 +1,4 @@
+// Renderiza a barra lateral responsável pela navegação principal do dashboard.
 import {
   Box,
   List,
@@ -26,7 +27,7 @@ export function Sidebar() {
       }}
     >
       <Typography component="div" sx={{ fontSize: 32, fontWeight: 700 }}>
-        Dashboard 
+        Dashboard
       </Typography>
 
       <Typography variant="caption" sx={{ mt: 0.5, mb: 4 }}>

@@ -14,6 +14,7 @@ const queryClient = new QueryClient({
   },
 });
 
+// Inicializa o React Query, o tema Material UI e os estilos globais.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

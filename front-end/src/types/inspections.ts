@@ -1,3 +1,6 @@
+// Define os tipos usados para representar caixas, ruas e posições das inspeções.
+
+// Classificações de caixas reconhecidas pelo modelo de detecção.
 export type BoxClass =
   | "caixa-preta"
   | "caixa-verde"
@@ -6,13 +9,10 @@ export type BoxClass =
   | "caixa-vermelha"
   | "caixa-fechada";
 
+// Estados visuais usados pelo mapa de posições.
 export type PositionStatus = "thermal" | "unknown" | "empty" | "not_observable";
 
-export type WarehouseStreet = {
-  id: string;
-  capacity: number;
-};
-
+// Representa uma caixa normalizada para exibição no mapa e na tabela.
 export type InspectionResult = {
   id: number;
   position: string;
