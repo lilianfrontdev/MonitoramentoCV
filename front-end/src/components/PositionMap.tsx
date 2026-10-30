@@ -265,11 +265,13 @@ export function PositionMap({ results, streets }: PositionMapProps) {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            {selected
+            {selected?.result
               ? `${selected.position} · ${selected.result.classification} · ${(
                   (selected.result.confidence ?? 0) * 100
                 ).toFixed(1)}% de confiança`
-              : "Nenhuma caixa selecionada."}
+              : selected
+                ? `${selected.position} · Nenhuma caixa atribuída para esta posição.`
+                : "Nenhuma caixa selecionada."}
           </Typography>
         </Box>
 
