@@ -1,4 +1,4 @@
-# Monitoramento em Tempo Real da Distribuição de Caixas Térmicas no Depósito da Soprano por meio da Visão Computacional
+# Monitoramento da Distribuição de Caixas Térmicas no Depósito da Soprano por meio da Visão Computacional
 
 Aplicação que identifica, classifica e contabiliza as **caixas térmicas** armazenadas nas ruas do Centro de Distribuição da Soprano a partir de **imagens e vídeos** capturados no depósito. O processamento usa um modelo **YOLO** treinado com fotos do próprio CD, rastreia cada caixa ao longo do vídeo com **ByteTrack** e transmite o resultado ao painel web **em tempo real** via WebSocket.
 
